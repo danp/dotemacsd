@@ -26,6 +26,11 @@
   (when (not (package-installed-p p))
     (package-install p)))
 
+; needed to run things installed via homebrew, such as aspell
+(when (equal system-type 'darwin)
+  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
+  (push "/usr/local/bin" exec-path))
+
 (require 'color-theme-ir-black)
 (color-theme-ir-black)
 
@@ -59,3 +64,6 @@
                                                      plain-tex-mode))
                 (let ((mark-even-if-inactive transient-mark-mode))
                   (indent-region (region-beginning) (region-end) nil))))))
+
+; brew install apsell --lang=en
+(setq ispell-program-name "aspell")
