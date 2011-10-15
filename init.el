@@ -69,3 +69,5 @@
 (setq ispell-program-name "aspell")
 
 (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
+
+(setq-default fill-column 120)
