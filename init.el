@@ -67,3 +67,5 @@
 
 ; brew install apsell --lang=en
 (setq ispell-program-name "aspell")
+
+(setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
