@@ -71,3 +71,9 @@
 (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
 
 (setq-default fill-column 120)
+
+(setq ruby-deep-indent-paren nil)
+(setq ruby-deep-arglist nil)
+(add-hook 'ruby-mode-hook
+          '(lambda ()
+             (add-hook 'before-save-hook 'whitespace-cleanup nil t)))
