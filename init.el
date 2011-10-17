@@ -77,3 +77,7 @@
 (add-hook 'ruby-mode-hook
           '(lambda ()
              (add-hook 'before-save-hook 'whitespace-cleanup nil t)))
+
+(require 'linum)
+(global-linum-mode 1)
+(setq linum-format "%d ")
