@@ -72,11 +72,14 @@
 
 (setq-default fill-column 120)
 
+; ruby
 (setq ruby-deep-indent-paren nil)
 (setq ruby-deep-arglist nil)
 (add-hook 'ruby-mode-hook
           '(lambda ()
              (add-hook 'before-save-hook 'whitespace-cleanup nil t)))
+;; no paredit from starter-kit-ruby please
+(remove-hook 'ruby-mode-hook 'esk-paredit-nonlisp)
 
 (require 'linum)
 (global-linum-mode 1)
