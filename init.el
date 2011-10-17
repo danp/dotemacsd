@@ -81,3 +81,10 @@
 (require 'linum)
 (global-linum-mode 1)
 (setq linum-format "%d ")
+
+; ledger
+(add-to-list 'load-path (concat esk-user-dir "ledger-mode"))
+(require 'ledger)
+(add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
+(add-hook 'ledger-mode-hook '(lambda () (auto-fill-mode 0)))
+(add-hook 'ledger-mode-hook '(lambda () (flyspell-mode 0)))
