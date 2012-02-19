@@ -36,6 +36,10 @@
 
 (server-mode 1)
 
+; NO
+(remove-hook 'text-mode-hook 'turn-on-auto-fill)
+(remove-hook 'text-mode-hook 'turn-on-flyspell)
+
 (require 'textmate)
 (textmate-mode 1)
 ; reset the list of ignored things; previously included at least 'log'
