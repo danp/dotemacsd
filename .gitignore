@@ -1,6 +1,5 @@
-.smex-items
+.lsp-session-v1
 auto-save-list
-elpa
 backups
-places
-url
+elpa
+transient

@@ -1,97 +1,120 @@
+; custom
+(setq custom-file "~/.emacs.d/custom.el")
+(load custom-file)
+
+; appearance basics
+(set-default-font "Inconsolata-15" nil t)
+(setq inhibit-splash-screen t)
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(server-mode)
+(setq visible-bell t)
+(blink-cursor-mode -1)
+; maximize by default
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq show-paren-delay  0)
+(show-paren-mode)
+
+; backups
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+(setq delete-old-versions t)
+(setq kept-old-versions 1000)
+(setq vc-make-backup-files t)
+(setq version-control t)
+
+; unique buffer names
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'forward)
+
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+(global-set-key (kbd "C-c r") 'revert-buffer)
+(defalias 'yes-or-no-p 'y-or-n-p)
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+; package init
 (require 'package)
-(add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/"))
+
+(setq package-archives '(("org"       . "https://orgmode.org/elpa/")
+                         ("gnu"       . "https://elpa.gnu.org/packages/")
+                         ("melpa"     . "https://melpa.org/packages/")
+                         ("melpa-stable" . "https://stable.melpa.org/packages/")))
+
 (package-initialize)
+; this is too slow to do every startup
+; would be nice if there was a global use-package "before install" hook
+; where this could be done once
+; (package-refresh-contents)
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+(eval-when-compile (require 'use-package))
+(setq use-package-always-ensure t)
 
-(when (not package-archive-contents)
-  (package-refresh-contents))
+(use-package diminish
+  :demand t)
 
-(defvar my-packages '(
-  starter-kit
-  starter-kit-bindings
-  starter-kit-ruby
-  markdown-mode
-  yaml-mode
-  coffee-mode
-  color-theme-ir-black
-  gist
-  go-mode
-  haml-mode
-  textmate
-  auto-indent-mode
-  maxframe
-  marmalade))
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns))
+  :init
+  (setq exec-path-from-shell-check-startup-files nil)
+  :config
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-env "GOPATH"))
 
-(dolist (p my-packages)
-  (when (not (package-installed-p p))
-    (package-install p)))
+(use-package ivy
+  :diminish
+  :config
+  (ivy-mode))
 
-; needed to run things installed via homebrew, such as aspell
-(when (equal system-type 'darwin)
-  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
-  (push "/usr/local/bin" exec-path))
+(use-package swiper
+  :after ivy
+  :bind (("C-s" . swiper)
+         ("C-r" . swiper)))
 
-(require 'color-theme-ir-black)
-(color-theme-ir-black)
+(use-package magit
+  :config
+  (global-set-key (kbd "C-x g") 'magit-status))
 
-(server-mode 1)
+(use-package go-mode)
 
-; NO
-(remove-hook 'text-mode-hook 'turn-on-auto-fill)
-(remove-hook 'text-mode-hook 'turn-on-flyspell)
+(use-package lsp-mode
+  :config
+  (lsp-register-custom-settings
+    '(("gopls.completeUnimported" t t)))
+  :commands (lsp lsp-deferred)
+  :hook (go-mode . lsp-deferred))
 
-(require 'textmate)
-(textmate-mode 1)
-; reset the list of ignored things; previously included at least 'log'
-(setq *textmate-gf-exclude*
-   "/\\.|vendor|tmp|\\.xcodeproj|\\.nib|\\.framework|\\.app|\\.pbproj|\\.pbxproj|\\.xcode|\\.xcodeproj|\\.bundle|\\.pyc|\\.rbc")
-; reset this to include Gemfile
-(setq *textmate-project-roots*
-   '(".git" ".hg" "Rakefile" "Makefile" "Gemfile" "README" "build.xml"))
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 
-(set-default-font "Menlo-12")
+(use-package lsp-ui
+  :commands lsp-ui-mode)
 
-(require 'maxframe)
-(setq mf-max-width 1600)
-(add-hook 'window-setup-hook 'maximize-frame t)
+(use-package company
+  :diminish
+  :config
+  ;; Optionally enable completion-as-you-type behavior.
+  (setq company-idle-delay 0)
+  (setq company-minimum-prefix-length 1))
 
-; autoindent on yank-pop
-(dolist (command '(yank yank-pop))
-  (eval `(defadvice ,command (after indent-region activate)
-           (and (not current-prefix-arg)
-                (member major-mode '(emacs-lisp-mode lisp-mode
-                                                     clojure-mode    scheme-mode
-                                                     haskell-mode    ruby-mode
-                                                     rspec-mode      python-mode
-                                                     c-mode          c++-mode
-                                                     objc-mode       latex-mode
-                                                     plain-tex-mode))
-                (let ((mark-even-if-inactive transient-mark-mode))
-                  (indent-region (region-beginning) (region-end) nil))))))
+(use-package company-lsp
+  :commands company-lsp)
 
-; brew install apsell --lang=en
-(setq ispell-program-name "aspell")
+(use-package yasnippet
+  :diminish yas-minor-mode
+  :commands yas-minor-mode
+  :hook (go-mode . yas-minor-mode))
 
-(setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
+(use-package find-file-in-project
+  :config
+  (add-to-list 'ffip-project-file '"go.mod")
+  (add-to-list 'ffip-project-file '"Rakefile")
+  (add-to-list 'ffip-project-file '"Gemfile")
+  :bind
+  ("s-t" . 'find-file-in-project))
 
-(setq-default fill-column 120)
-
-; ruby
-(setq ruby-deep-indent-paren nil)
-(setq ruby-deep-arglist nil)
-(add-hook 'ruby-mode-hook
-          '(lambda ()
-             (add-hook 'before-save-hook 'whitespace-cleanup nil t)))
-;; no paredit from starter-kit-ruby please
-(remove-hook 'ruby-mode-hook 'esk-paredit-nonlisp)
-
-(require 'linum)
-(global-linum-mode 1)
-(setq linum-format "%d ")
-
-; ledger
-(add-to-list 'load-path (concat esk-user-dir "ledger-mode"))
-(require 'ledger)
-(add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
-(add-hook 'ledger-mode-hook '(lambda () (auto-fill-mode 0)))
-(add-hook 'ledger-mode-hook '(lambda () (flyspell-mode 0)))
+(use-package enh-ruby-mode
+  :mode "\\.rb\\'"
+  :interpreter "ruby")
