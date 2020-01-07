@@ -85,7 +85,9 @@
     '(("gopls.completeUnimported" t t)))
   :commands (lsp lsp-deferred)
   :hook
+  ; uses https://github.com/golang/tools/tree/master/gopls
   (go-mode . lsp-deferred)
+  ; uses https://github.com/elm-tooling/elm-language-server
   (elm-mode . lsp-deferred))
 
 (defun lsp-go-install-save-hooks ()
