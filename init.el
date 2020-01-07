@@ -77,12 +77,16 @@
 
 (use-package go-mode)
 
+(use-package elm-mode)
+
 (use-package lsp-mode
   :config
   (lsp-register-custom-settings
     '(("gopls.completeUnimported" t t)))
   :commands (lsp lsp-deferred)
-  :hook (go-mode . lsp-deferred))
+  :hook
+  (go-mode . lsp-deferred)
+  (elm-mode . lsp-deferred))
 
 (defun lsp-go-install-save-hooks ()
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
