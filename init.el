@@ -88,7 +88,9 @@
   ; uses https://github.com/golang/tools/tree/master/gopls
   (go-mode . lsp-deferred)
   ; uses https://github.com/elm-tooling/elm-language-server
-  (elm-mode . lsp-deferred))
+  (elm-mode . lsp-deferred)
+  ; uses https://github.com/rust-lang/rls
+  (rust-mode . lsp-deferred))
 
 (defun lsp-go-install-save-hooks ()
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
@@ -124,3 +126,5 @@
 (use-package enh-ruby-mode
   :mode "\\.rb\\'"
   :interpreter "ruby")
+
+(use-package rust-mode)
