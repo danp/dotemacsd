@@ -128,3 +128,5 @@
   :interpreter "ruby")
 
 (use-package rust-mode)
+
+(use-package yaml-mode)
