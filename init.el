@@ -130,3 +130,5 @@
 (use-package rust-mode)
 
 (use-package yaml-mode)
+
+(use-package protobuf-mode)
