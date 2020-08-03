@@ -3,7 +3,8 @@
 (load custom-file)
 
 ; appearance basics
-(set-default-font "Inconsolata-15" nil t)
+(add-to-list 'default-frame-alist '(font . "Inconsolata-15" ))
+(set-face-attribute 'default t :font "Inconsolata-15" )
 (setq inhibit-splash-screen t)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
