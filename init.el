@@ -9,13 +9,13 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
-(server-mode)
+(server-mode t)
 (setq visible-bell t)
 (blink-cursor-mode -1)
 ; maximize by default
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (setq show-paren-delay  0)
-(show-paren-mode)
+(show-paren-mode t)
 
 ; backups
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
@@ -33,10 +33,20 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+(setq tramp-default-method "ssh")
+
+(setq bookmark-save-flag 1)
+
+;; use (likely newer) sqlite3 shell from homebrew for sql-mode
+;; if it exists
+(if-let ((sqlite3-path "/usr/local/opt/sqlite3/bin/sqlite3")
+	 ((file-exists-p sqlite3-path)))
+    (setq sql-sqlite-program sqlite3-path))
+
 ; package init
 (require 'package)
 
-(setq package-archives '(("org"       . "https://orgmode.org/elpa/")
+(setq package-archives '(;("org"       . "https://orgmode.org/elpa/")
                          ("gnu"       . "https://elpa.gnu.org/packages/")
                          ("melpa"     . "https://melpa.org/packages/")
                          ("melpa-stable" . "https://stable.melpa.org/packages/")))
@@ -65,12 +75,21 @@
 (use-package ivy
   :diminish
   :config
+  (setq ivy-use-virtual-buffers t)
   (ivy-mode))
 
 (use-package swiper
   :after ivy
   :bind (("C-s" . swiper)
          ("C-r" . swiper)))
+
+(use-package ivy-xref
+  :init
+  (setq xref-show-definitions-function #'ivy-xref-show-defs)
+  (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
+
+(use-package markdown-mode
+  :mode ("\\.md\\'" . gfm-mode))
 
 (use-package magit
   :config
@@ -81,44 +100,44 @@
 (use-package elm-mode)
 
 (use-package lsp-mode
-  :config
-  (lsp-register-custom-settings
-    '(("gopls.completeUnimported" t t)))
-  :commands (lsp lsp-deferred)
+  :config (lsp-register-custom-settings
+	   '(("gopls.staticcheck" t t)))
   :hook
-  ; uses https://github.com/golang/tools/tree/master/gopls
-  (go-mode . lsp-deferred)
-  ; uses https://github.com/elm-tooling/elm-language-server
-  (elm-mode . lsp-deferred)
-  ; uses https://github.com/rust-lang/rls
-  (rust-mode . lsp-deferred))
+  (go-mode . lsp)
+  (elm-mode . lsp)
+  (rust-mode . lsp)
+  :commands lsp)
 
 (defun lsp-go-install-save-hooks ()
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 
-(use-package flycheck)
-
-(use-package lsp-ui
-  :commands lsp-ui-mode)
+(defun lsp-rust-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+(add-hook 'rust-mode-hook #'lsp-rust-install-save-hooks)
 
 (use-package company
-  :diminish)
-
-(use-package company-lsp
-  :commands company-lsp)
+  :diminish
+  :hook (go-mode . company-mode))
 
 (use-package yasnippet
   :diminish yas-minor-mode
   :commands yas-minor-mode
-  :hook (go-mode . yas-minor-mode))
+  :hook
+  (go-mode . yas-minor-mode)
+  (rust-mode . yas-minor-mode))
 
 (use-package find-file-in-project
   :config
   (add-to-list 'ffip-project-file '"go.mod")
   (add-to-list 'ffip-project-file '"Rakefile")
   (add-to-list 'ffip-project-file '"Gemfile")
+  (add-to-list 'ffip-prune-patterns '"*/.bin")
+  (add-to-list 'ffip-prune-patterns '"*/.devdb")
+  (add-to-list 'ffip-prune-patterns '"*/.log")
+  (add-to-list 'ffip-prune-patterns '"*/.minio")
   :bind
   ("s-t" . 'find-file-in-project))
 
@@ -137,3 +156,13 @@
   :init
   (add-hook 'sh-mode-hook 'flymake-shellcheck-load)
   (add-hook 'sh-mode-hook 'flymake-mode))
+
+(use-package caddyfile-mode)
+
+(use-package ag)
+
+(use-package git-link
+  :config
+  (setq git-link-use-commit t))
+
+(use-package fish-mode)
