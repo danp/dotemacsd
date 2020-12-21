@@ -78,36 +78,72 @@
 
 (use-package go-mode)
 
-(use-package elm-mode)
-
-(use-package lsp-mode
-  :config
-  (lsp-register-custom-settings
-    '(("gopls.completeUnimported" t t)))
-  :commands (lsp lsp-deferred)
+(use-package eglot
   :hook
-  ; uses https://github.com/golang/tools/tree/master/gopls
-  (go-mode . lsp-deferred)
-  ; uses https://github.com/elm-tooling/elm-language-server
-  (elm-mode . lsp-deferred)
-  ; uses https://github.com/rust-lang/rls
-  (rust-mode . lsp-deferred))
+  (go-mode . eglot-ensure))
 
-(defun lsp-go-install-save-hooks ()
-  (add-hook 'before-save-hook #'lsp-format-buffer t t)
-  (add-hook 'before-save-hook #'lsp-organize-imports t t))
-(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+(defun eglot-organize-imports ()
+  "Offer to execute code actions `source.organizeImports'."
+  (interactive)
+  (unless (eglot--server-capable :codeActionProvider)
+    (eglot--error "Server can't execute code actions!"))
+  (let* ((server (eglot--current-server-or-lose))
+         (actions (jsonrpc-request
+                   server
+                   :textDocument/codeAction
+                   (list :textDocument (eglot--TextDocumentIdentifier))))
+         (action (cl-find-if
+                  (jsonrpc-lambda (&key kind &allow-other-keys)
+                    (string-equal kind "source.organizeImports" ))
+                  actions)))
+    (when action
+      (eglot--dcase action
+        (((Command) command arguments)
+         (eglot-execute-command server (intern command) arguments))
+        (((CodeAction) edit command)
+         (when edit (eglot--apply-workspace-edit edit))
+         (when command
+           (eglot--dbind ((Command) command arguments) command
+             (eglot-execute-command server (intern command) arguments))))))))
 
-(use-package flycheck)
+(defun go-install-save-hooks ()
+  (add-hook 'before-save-hook #'eglot-organize-imports t t)
+  (add-hook 'before-save-hook #'eglot-format-buffer t t))
 
-(use-package lsp-ui
-  :commands lsp-ui-mode)
+(add-hook 'go-mode-hook #'go-install-save-hooks)
+
+
+; (use-package elm-mode)
+
+;(use-package lsp-mode
+;  :config
+;  (lsp-register-custom-settings
+;    '(("gopls.completeUnimported" t t)))
+;  :commands (lsp lsp-deferred)
+;  :hook
+;  ; uses https://github.com/golang/tools/tree/master/gopls
+;  (go-mode . lsp-deferred)
+;  ; uses https://github.com/elm-tooling/elm-language-server
+;  ; (elm-mode . lsp-deferred)
+;  ; uses https://github.com/rust-lang/rls
+;  (rust-mode . lsp-deferred))
+
+;(defun lsp-go-install-save-hooks ()
+;  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+;  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+;(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+
+;(use-package flycheck)
+
+;(use-package lsp-ui
+;  :commands lsp-ui-mode)
 
 (use-package company
-  :diminish)
+  :diminish
+  :hook (go-mode . company-mode))
 
-(use-package company-lsp
-  :commands company-lsp)
+;(use-package company-lsp
+;  :commands company-lsp)
 
 (use-package yasnippet
   :diminish yas-minor-mode
