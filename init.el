@@ -82,8 +82,12 @@
   :hook
   (go-mode . eglot-ensure))
 
+;; from https://github.com/joaotavora/eglot/issues/574, thx bcmills
+;;
+;; eglot-organize-imports is hopefully a temporary stopgap until
+;; https://github.com/joaotavora/eglot/issues/574 is addressed.
 (defun eglot-organize-imports ()
-  "Offer to execute code actions `source.organizeImports'."
+  "Offer to execute the source.organizeImports code action."
   (interactive)
   (unless (eglot--server-capable :codeActionProvider)
     (eglot--error "Server can't execute code actions!"))
@@ -99,51 +103,29 @@
     (when action
       (eglot--dcase action
         (((Command) command arguments)
-         (eglot-execute-command server (intern command) arguments))
+          (eglot-execute-command server (intern command) arguments))
         (((CodeAction) edit command)
-         (when edit (eglot--apply-workspace-edit edit))
-         (when command
-           (eglot--dbind ((Command) command arguments) command
-             (eglot-execute-command server (intern command) arguments))))))))
+          (when edit (eglot--apply-workspace-edit edit))
+          (when command
+            (eglot--dbind ((Command) command arguments) command
+              (eglot-execute-command server (intern command) arguments))))))))
 
-(defun go-install-save-hooks ()
-  (add-hook 'before-save-hook #'eglot-organize-imports t t)
-  (add-hook 'before-save-hook #'eglot-format-buffer t t))
+(defun eglot-organize-imports-on-save ()
+  (defun eglot-organize-imports-nosignal ()
+    "Run eglot-organize-imports, but demote errors to messages."
+    ;; Demote errors to work around
+    ;; https://github.com/joaotavora/eglot/issues/411#issuecomment-749305401
+    ;; so that we do not prevent subsequent save hooks from running
+    ;; if we encounter a spurious error.
+    (with-demoted-errors "Error: %s" (eglot-organize-imports)))
+  (add-hook 'before-save-hook #'eglot-organize-imports-on-save))
 
-(add-hook 'go-mode-hook #'go-install-save-hooks)
-
-
-; (use-package elm-mode)
-
-;(use-package lsp-mode
-;  :config
-;  (lsp-register-custom-settings
-;    '(("gopls.completeUnimported" t t)))
-;  :commands (lsp lsp-deferred)
-;  :hook
-;  ; uses https://github.com/golang/tools/tree/master/gopls
-;  (go-mode . lsp-deferred)
-;  ; uses https://github.com/elm-tooling/elm-language-server
-;  ; (elm-mode . lsp-deferred)
-;  ; uses https://github.com/rust-lang/rls
-;  (rust-mode . lsp-deferred))
-
-;(defun lsp-go-install-save-hooks ()
-;  (add-hook 'before-save-hook #'lsp-format-buffer t t)
-;  (add-hook 'before-save-hook #'lsp-organize-imports t t))
-;(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
-
-;(use-package flycheck)
-
-;(use-package lsp-ui
-;  :commands lsp-ui-mode)
+(add-hook 'go-mode-hook #'eglot-organize-imports-on-save)
+(add-hook 'go-mode-hook #'eglot-format-buffer)
 
 (use-package company
   :diminish
   :hook (go-mode . company-mode))
-
-;(use-package company-lsp
-;  :commands company-lsp)
 
 (use-package yasnippet
   :diminish yas-minor-mode
