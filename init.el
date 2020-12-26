@@ -80,7 +80,8 @@
 
 (use-package eglot
   :hook
-  (go-mode . eglot-ensure))
+  (go-mode . eglot-ensure)
+  (go-mode . go-install-save-hooks))
 
 ;; from https://github.com/joaotavora/eglot/issues/574, thx bcmills
 ;;
@@ -110,18 +111,17 @@
             (eglot--dbind ((Command) command arguments) command
               (eglot-execute-command server (intern command) arguments))))))))
 
-(defun eglot-organize-imports-on-save ()
-  (defun eglot-organize-imports-nosignal ()
-    "Run eglot-organize-imports, but demote errors to messages."
-    ;; Demote errors to work around
-    ;; https://github.com/joaotavora/eglot/issues/411#issuecomment-749305401
-    ;; so that we do not prevent subsequent save hooks from running
-    ;; if we encounter a spurious error.
-    (with-demoted-errors "Error: %s" (eglot-organize-imports)))
-  (add-hook 'before-save-hook #'eglot-organize-imports-on-save))
+(defun eglot-organize-imports-nosignal ()
+  "Run eglot-organize-imports, but demote errors to messages."
+  ;; Demote errors to work around
+  ;; https://github.com/joaotavora/eglot/issues/411#issuecomment-749305401
+  ;; so that we do not prevent subsequent save hooks from running
+  ;; if we encounter a spurious error.
+  (with-demoted-errors "Error: %s" (eglot-organize-imports)))
 
-(add-hook 'go-mode-hook #'eglot-organize-imports-on-save)
-(add-hook 'go-mode-hook #'eglot-format-buffer)
+(defun go-install-save-hooks ()
+  (add-hook 'before-save-hook #'eglot-organize-imports-nosignal)
+  (add-hook 'before-save-hook #'eglot-format-buffer))
 
 (use-package company
   :diminish
