@@ -120,8 +120,8 @@
   (with-demoted-errors "Error: %s" (eglot-organize-imports)))
 
 (defun go-install-save-hooks ()
-  (add-hook 'before-save-hook #'eglot-organize-imports-nosignal)
-  (add-hook 'before-save-hook #'eglot-format-buffer))
+  (add-hook 'before-save-hook #'eglot-organize-imports-nosignal -10 t)
+  (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
 
 (use-package company
   :diminish
@@ -155,3 +155,11 @@
   :init
   (add-hook 'sh-mode-hook 'flymake-shellcheck-load)
   (add-hook 'sh-mode-hook 'flymake-mode))
+
+(require 'project)
+(defun project-find-go-module (dir)
+  (when-let ((root (locate-dominating-file dir "go.mod")))
+    (cons 'go-module root)))
+(cl-defmethod project-root ((project (head go-module)))
+  (cdr project))
+(add-hook 'project-find-functions #'project-find-go-module)
