@@ -72,6 +72,8 @@
   :bind (("C-s" . swiper)
          ("C-r" . swiper)))
 
+(use-package markdown-mode)
+
 (use-package magit
   :config
   (global-set-key (kbd "C-x g") 'magit-status))
