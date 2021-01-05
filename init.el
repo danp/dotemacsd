@@ -81,9 +81,12 @@
 (use-package go-mode)
 
 (use-package eglot
+  :config
+  (add-to-list 'eglot-server-programs '(enh-ruby-mode . ("solargraph" "socket" "--port" :autoport)))
   :hook
   (go-mode . eglot-ensure)
-  (go-mode . go-install-save-hooks))
+  (go-mode . go-install-save-hooks)
+  (enh-ruby-mode . eglot-ensure))
 
 ;; from https://github.com/joaotavora/eglot/issues/574, thx bcmills
 ;;
