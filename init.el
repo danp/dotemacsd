@@ -36,8 +36,8 @@
 ; package init
 (require 'package)
 
-(setq package-archives '(("org"       . "https://orgmode.org/elpa/")
-                         ("gnu"       . "https://elpa.gnu.org/packages/")
+(setq package-archives '(;("org"       . "https://orgmode.org/elpa/")
+                         ;("gnu"       . "https://elpa.gnu.org/packages/")
                          ("melpa"     . "https://melpa.org/packages/")
                          ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
@@ -82,6 +82,7 @@
 
 (use-package eglot
   :config
+  (add-to-list 'eglot-stay-out-of 'completion-styles)
   (add-to-list 'eglot-server-programs '(enh-ruby-mode . ("solargraph" "socket" "--port" :autoport)))
   :hook
   (go-mode . eglot-ensure)
