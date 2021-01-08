@@ -82,7 +82,7 @@
 
 (use-package eglot
   :config
-  (add-to-list 'eglot-stay-out-of 'completion-styles)
+  (add-to-list 'eglot-stay-out-of 'completion-styles) ; uses gopls completion ordering https://github.com/joaotavora/eglot/issues/576
   (add-to-list 'eglot-server-programs '(enh-ruby-mode . ("solargraph" "socket" "--port" :autoport)))
   :hook
   (go-mode . eglot-ensure)
