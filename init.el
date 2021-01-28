@@ -180,3 +180,7 @@
 (cl-defmethod project-root ((project (head go-module)))
   (cdr project))
 (add-hook 'project-find-functions #'project-find-go-module)
+
+(setq tramp-default-method "ssh")
+
+(setq bookmark-save-flag 1)

@@ -3,3 +3,6 @@ auto-save-list
 backups
 elpa
 transient
+eshell
+tramp
+bookmarks
