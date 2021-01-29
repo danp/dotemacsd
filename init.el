@@ -100,6 +100,15 @@
   (go-mode . go-install-save-hooks)
   (enh-ruby-mode . eglot-ensure))
 
+(defun eglot-shutdown-all ()
+  "Shut down all eglot servers"
+  (interactive)
+  (let ((servers (cl-loop for servers
+                          being hash-values of eglot--servers-by-project
+                          append servers)))
+    (dolist (server servers)
+      (eglot-shutdown server))))
+
 ;; from https://github.com/joaotavora/eglot/issues/574, thx bcmills
 ;;
 ;; eglot-organize-imports is hopefully a temporary stopgap until
