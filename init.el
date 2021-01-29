@@ -184,3 +184,7 @@
 (setq-default eglot-workspace-configuration
     '((:gopls .
         ((staticcheck . t)))))
+
+(setq tramp-default-method "ssh")
+
+(setq bookmark-save-flag 1)
