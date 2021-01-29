@@ -9,13 +9,13 @@
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
-(server-mode)
+(server-mode t)
 (setq visible-bell t)
 (blink-cursor-mode -1)
 ; maximize by default
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (setq show-paren-delay  0)
-(show-paren-mode)
+(show-paren-mode t)
 
 ; backups
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
