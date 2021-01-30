@@ -109,44 +109,77 @@
     (dolist (server servers)
       (eglot-shutdown server))))
 
-;; from https://github.com/joaotavora/eglot/issues/574, thx bcmills
-;;
-;; eglot-organize-imports is hopefully a temporary stopgap until
-;; https://github.com/joaotavora/eglot/issues/574 is addressed.
-(defun eglot-organize-imports ()
-  "Offer to execute the source.organizeImports code action."
-  (interactive)
+(defun eglot-interactively-organize-imports ()
+  (call-interactively 'eglot-code-action-organize-imports))
+
+;;; remove once https://github.com/joaotavora/eglot/issues/609 resolved which
+;;; will likely add `:deferred t` to jsonrpc-request
+(defun eglot-code-actions (beg &optional end action-kind)
+  "Offer to execute actions of ACTION-KIND between BEG and END.
+If ACTION-KIND is nil, consider all kinds of actions.
+Interactively, default BEG and END to region's bounds else BEG is
+point and END is nil, which results in a request for code actions
+at point.  With prefix argument, prompt for ACTION-KIND."
+  (interactive
+   `(,@(eglot--region-bounds)
+     ,(and current-prefix-arg
+           (completing-read "[eglot] Action kind: "
+                            '("quickfix" "refactor.extract" "refactor.inline"
+                              "refactor.rewrite" "source.organizeImports")))))
   (unless (eglot--server-capable :codeActionProvider)
     (eglot--error "Server can't execute code actions!"))
   (let* ((server (eglot--current-server-or-lose))
-         (actions (jsonrpc-request
-                   server
-                   :textDocument/codeAction
-                   (list :textDocument (eglot--TextDocumentIdentifier))))
-         (action (cl-find-if
-                  (jsonrpc-lambda (&key kind &allow-other-keys)
-                    (string-equal kind "source.organizeImports" ))
-                  actions)))
-    (when action
-      (eglot--dcase action
-        (((Command) command arguments)
-          (eglot-execute-command server (intern command) arguments))
-        (((CodeAction) edit command)
-          (when edit (eglot--apply-workspace-edit edit))
-          (when command
-            (eglot--dbind ((Command) command arguments) command
-              (eglot-execute-command server (intern command) arguments))))))))
-
-(defun eglot-organize-imports-nosignal ()
-  "Run eglot-organize-imports, but demote errors to messages."
-  ;; Demote errors to work around
-  ;; https://github.com/joaotavora/eglot/issues/411#issuecomment-749305401
-  ;; so that we do not prevent subsequent save hooks from running
-  ;; if we encounter a spurious error.
-  (with-demoted-errors "Error: %s" (eglot-organize-imports)))
+         (actions
+          (jsonrpc-request
+           server
+           :textDocument/codeAction
+           (list :textDocument (eglot--TextDocumentIdentifier)
+                 :range (list :start (eglot--pos-to-lsp-position beg)
+                              :end (eglot--pos-to-lsp-position end))
+                 :context
+                 `(:diagnostics
+                   [,@(cl-loop for diag in (flymake-diagnostics beg end)
+                               when (cdr (assoc 'eglot-lsp-diag
+                                                (eglot--diag-data diag)))
+                               collect it)]
+                   ,@(when action-kind `(:only [,action-kind]))))
+	   :deferred t))
+         (menu-items
+          (or (cl-loop for action across actions
+                       ;; Do filtering ourselves, in case the `:only'
+                       ;; didn't go through.
+                       when (or (not action-kind)
+                                (equal action-kind (plist-get action :kind)))
+                       collect (cons (plist-get action :title) action))
+              (apply #'eglot--error
+                     (if action-kind `("No \"%s\" code actions here" ,action-kind)
+                       `("No code actions here")))))
+         (preferred-action (cl-find-if
+                            (lambda (menu-item)
+                              (plist-get (cdr menu-item) :isPreferred))
+                            menu-items))
+         (default-action (car (or preferred-action (car menu-items))))
+         (action (if (and action-kind (null (cadr menu-items)))
+                     (cdr (car menu-items))
+                   (if (listp last-nonmenu-event)
+                       (x-popup-menu last-nonmenu-event `("Eglot code actions:"
+                                                          ("dummy" ,@menu-items)))
+                     (cdr (assoc (completing-read
+                                  (format "[eglot] Pick an action (default %s): "
+                                          default-action)
+                                  menu-items nil t nil nil default-action)
+                                 menu-items))))))
+    (eglot--dcase action
+      (((Command) command arguments)
+       (eglot-execute-command server (intern command) arguments))
+      (((CodeAction) edit command)
+       (when edit (eglot--apply-workspace-edit edit))
+       (when command
+         (eglot--dbind ((Command) command arguments) command
+           (eglot-execute-command server (intern command) arguments)))))))
 
 (defun go-install-save-hooks ()
-  (add-hook 'before-save-hook #'eglot-organize-imports-nosignal -10 t)
+  (add-hook 'before-save-hook #'eglot-interactively-organize-imports -20 t)
   (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
 
 (use-package company
