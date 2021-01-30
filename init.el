@@ -33,6 +33,10 @@
 (defalias 'yes-or-no-p 'y-or-n-p)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+(setq tramp-default-method "ssh")
+
+(setq bookmark-save-flag 1)
+
 ; package init
 (require 'package)
 
@@ -74,22 +78,25 @@
 
 (use-package ivy-xref
   :init
-  ;; xref initialization is different in Emacs 27 - there are two different
-  ;; variables which can be set rather than just one
-  (when (>= emacs-major-version 27)
-    (setq xref-show-definitions-function #'ivy-xref-show-defs))
-  ;; Necessary in Emacs <27. In Emacs 27 it will affect all xref-based
-  ;; commands other than xref-find-definitions (e.g. project-find-regexp)
-  ;; as well
+  (setq xref-show-definitions-function #'ivy-xref-show-defs)
   (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
 
-(use-package markdown-mode)
+(use-package markdown-mode
+  :mode ("\\.md\\'" . gfm-mode))
 
 (use-package magit
   :config
   (global-set-key (kbd "C-x g") 'magit-status))
 
 (use-package go-mode)
+
+(require 'project)
+(defun project-find-go-module (dir)
+  (when-let ((root (locate-dominating-file dir "go.mod")))
+    (cons 'go-module root)))
+(cl-defmethod project-root ((project (head go-module)))
+  (cdr project))
+(add-hook 'project-find-functions #'project-find-go-module)
 
 (use-package eglot
   :config
@@ -99,6 +106,10 @@
   (go-mode . eglot-ensure)
   (go-mode . go-install-save-hooks)
   (enh-ruby-mode . eglot-ensure))
+
+(setq-default eglot-workspace-configuration
+    '((:gopls .
+        ((staticcheck . t)))))
 
 (defun eglot-shutdown-all ()
   "Shut down all eglot servers"
@@ -215,18 +226,4 @@ at point.  With prefix argument, prompt for ACTION-KIND."
   (add-hook 'sh-mode-hook 'flymake-shellcheck-load)
   (add-hook 'sh-mode-hook 'flymake-mode))
 
-(require 'project)
-(defun project-find-go-module (dir)
-  (when-let ((root (locate-dominating-file dir "go.mod")))
-    (cons 'go-module root)))
-(cl-defmethod project-root ((project (head go-module)))
-  (cdr project))
-(add-hook 'project-find-functions #'project-find-go-module)
-
-(setq-default eglot-workspace-configuration
-    '((:gopls .
-        ((staticcheck . t)))))
-
-(setq tramp-default-method "ssh")
-
-(setq bookmark-save-flag 1)
+(use-package caddyfile-mode)
