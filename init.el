@@ -121,11 +121,15 @@
       (eglot-shutdown server))))
 
 (defun eglot-interactively-organize-imports ()
-  (call-interactively 'eglot-code-action-organize-imports))
+  (with-demoted-errors "Error: %s"
+    (call-interactively 'eglot-code-action-organize-imports)))
+
+(defun eglot-interactively-format-buffer ()
+  (call-interactively 'eglot-format-buffer))
 
 (defun go-install-save-hooks ()
   (add-hook 'before-save-hook #'eglot-interactively-organize-imports -20 t)
-  (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
+  (add-hook 'before-save-hook #'eglot-interactively-format-buffer -10 t))
 
 (use-package company
   :diminish
