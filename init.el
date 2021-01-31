@@ -120,6 +120,9 @@
     (dolist (server servers)
       (eglot-shutdown server))))
 
+;; gopls only provides the source.organizeImports action if there are
+;; any changes to be made, which then makes eglot error.
+;; This breaks the before-save-hook chain so demote errors it emits.
 (defun eglot-interactively-organize-imports ()
   (with-demoted-errors "Error: %s"
     (call-interactively 'eglot-code-action-organize-imports)))
