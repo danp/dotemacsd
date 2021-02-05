@@ -39,9 +39,8 @@
 
 ;; use (likely newer) sqlite3 shell from homebrew for sql-mode
 ;; if it exists
-(let ((sqlite3-path "/usr/local/opt/sqlite3/bin/sqlite3"))
-  (when (file-exists-p sqlite3-path)
-    (setq sql-sqlite-program sqlite3-path)))
+(when-let ((sqlite3-path "/usr/local/opt/sqlite3/bin/sqlite3"))
+  (setq sql-sqlite-program sqlite3-path))
 
 ; package init
 (require 'package)
