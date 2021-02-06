@@ -75,6 +75,7 @@
 (use-package ivy
   :diminish
   :config
+  (setq ivy-use-virtual-buffers t)
   (ivy-mode))
 
 (use-package swiper
