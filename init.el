@@ -106,6 +106,8 @@
 (add-hook 'project-find-functions #'project-find-go-module)
 
 (use-package lsp-mode
+  :config (lsp-register-custom-settings
+	   '(("gopls.staticcheck" t t)))
   :hook (go-mode . lsp)
   :commands lsp)
 
@@ -114,8 +116,6 @@
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 
-(lsp-register-custom-settings
- '(("gopls.staticcheck" t t)))
 
 (use-package company
   :diminish
