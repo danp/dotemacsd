@@ -47,7 +47,7 @@
 (require 'package)
 
 (setq package-archives '(;("org"       . "https://orgmode.org/elpa/")
-                         ;("gnu"       . "https://elpa.gnu.org/packages/")
+                         ("gnu"       . "https://elpa.gnu.org/packages/")
                          ("melpa"     . "https://melpa.org/packages/")
                          ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
@@ -105,41 +105,9 @@
   (cdr project))
 (add-hook 'project-find-functions #'project-find-go-module)
 
-(use-package eglot
-  :config
-  (add-to-list 'eglot-stay-out-of 'completion-styles) ; uses gopls completion ordering https://github.com/joaotavora/eglot/issues/576
-  (add-to-list 'eglot-server-programs '(enh-ruby-mode . ("solargraph" "socket" "--port" :autoport)))
-  :hook
-  (go-mode . eglot-ensure)
-  (go-mode . go-install-save-hooks)
-  (enh-ruby-mode . eglot-ensure))
-
-(setq-default eglot-workspace-configuration
-    '((:gopls .
-        ((staticcheck . t)))))
-
-(defun eglot-shutdown-all ()
-  "Shut down all eglot servers"
-  (interactive)
-  (let ((servers (cl-loop for servers
-                          being hash-values of eglot--servers-by-project
-                          append servers)))
-    (dolist (server servers)
-      (eglot-shutdown server))))
-
-;; gopls only provides the source.organizeImports action if there are
-;; any changes to be made, which then makes eglot error.
-;; This breaks the before-save-hook chain so demote errors it emits.
-(defun eglot-interactively-organize-imports ()
-  (with-demoted-errors "Error: %s"
-    (call-interactively 'eglot-code-action-organize-imports)))
-
-(defun eglot-interactively-format-buffer ()
-  (call-interactively 'eglot-format-buffer))
-
-(defun go-install-save-hooks ()
-  (add-hook 'before-save-hook #'eglot-interactively-organize-imports -20 t)
-  (add-hook 'before-save-hook #'eglot-interactively-format-buffer -10 t))
+(use-package lsp-mode
+  :hook (go-mode . lsp)
+  :commands lsp)
 
 (use-package company
   :diminish
