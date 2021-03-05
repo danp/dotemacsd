@@ -97,24 +97,23 @@
 
 (use-package go-mode)
 
-(require 'project)
-(defun project-find-go-module (dir)
-  (when-let ((root (locate-dominating-file dir "go.mod")))
-    (cons 'go-module root)))
-(cl-defmethod project-root ((project (head go-module)))
-  (cdr project))
-(add-hook 'project-find-functions #'project-find-go-module)
-
 (use-package lsp-mode
   :config (lsp-register-custom-settings
 	   '(("gopls.staticcheck" t t)))
-  :hook (go-mode . lsp)
+  :hook
+  (go-mode . lsp)
+  (rust-mode . lsp)
   :commands lsp)
 
 (defun lsp-go-install-save-hooks ()
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+
+(defun lsp-rust-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+(add-hook 'rust-mode-hook #'lsp-rust-install-save-hooks)
 
 (use-package company
   :diminish
@@ -123,7 +122,9 @@
 (use-package yasnippet
   :diminish yas-minor-mode
   :commands yas-minor-mode
-  :hook (go-mode . yas-minor-mode))
+  :hook
+  (go-mode . yas-minor-mode)
+  (rust-mode . yas-minor-mode))
 
 (use-package find-file-in-project
   :config
