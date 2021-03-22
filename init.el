@@ -131,6 +131,10 @@
   (add-to-list 'ffip-project-file '"go.mod")
   (add-to-list 'ffip-project-file '"Rakefile")
   (add-to-list 'ffip-project-file '"Gemfile")
+  (add-to-list 'ffip-prune-patterns '"*/.bin")
+  (add-to-list 'ffip-prune-patterns '"*/.devdb")
+  (add-to-list 'ffip-prune-patterns '"*/.log")
+  (add-to-list 'ffip-prune-patterns '"*/.minio")
   :bind
   ("s-t" . 'find-file-in-project))
 
