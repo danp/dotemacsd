@@ -155,3 +155,9 @@
   (add-hook 'sh-mode-hook 'flymake-mode))
 
 (use-package caddyfile-mode)
+
+(use-package ag)
+
+(use-package git-link
+  :config
+  (setq git-link-use-commit t))
