@@ -102,6 +102,11 @@
 (use-package lsp-mode
   :config (lsp-register-custom-settings
 	   '(("gopls.staticcheck" t t)))
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.minio\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.log\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.elastic\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.devdb\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.bin\\'")
   :hook
   (go-mode . lsp)
   (elm-mode . lsp)
@@ -136,6 +141,7 @@
   (add-to-list 'ffip-project-file '"Gemfile")
   (add-to-list 'ffip-prune-patterns '"*/.bin")
   (add-to-list 'ffip-prune-patterns '"*/.devdb")
+  (add-to-list 'ffip-prune-patterns '"*/.elastic")
   (add-to-list 'ffip-prune-patterns '"*/.log")
   (add-to-list 'ffip-prune-patterns '"*/.minio")
   :bind
