@@ -97,6 +97,8 @@
 
 (use-package go-mode)
 
+(setq-default indent-tabs-mode nil)
+
 (use-package elm-mode)
 
 (use-package lsp-mode
