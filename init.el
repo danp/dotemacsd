@@ -103,6 +103,7 @@
   :config (lsp-register-custom-settings
 	   '(("gopls.staticcheck" t t)
 	     ("gopls.templateExtensions" [])))
+  ;(setq lsp-go-gopls-server-args '("-rpc.trace" "-logfile" "/tmp/gopls.log"))
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.minio\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.log\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.elastic\\'")
