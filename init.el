@@ -105,6 +105,8 @@
 (use-package lsp-mode
   :config (lsp-register-custom-settings
 	   '(("gopls.staticcheck" t t)
+	     ("gopls.chattyDiagnostics" t t)
+	     ("gopls.completionBudget" "1s" t)
 	     ("gopls.templateExtensions" [])))
   ;(setq lsp-go-gopls-server-args '("-rpc.trace" "-logfile" "/tmp/gopls.log"))
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.minio\\'")
