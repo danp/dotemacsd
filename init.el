@@ -62,6 +62,10 @@
 (eval-when-compile (require 'use-package))
 (setq use-package-always-ensure t)
 
+(use-package acme-theme
+  :config
+  (load-theme 'acme t))
+
 (use-package diminish
   :demand t)
 
@@ -105,9 +109,11 @@
 (use-package lsp-mode
   :config (lsp-register-custom-settings
 	   '(("gopls.staticcheck" t t)
-	     ("gopls.chattyDiagnostics" t t)
+	     ;("gopls.semanticTokens" t t)
 	     ("gopls.completionBudget" "1s" t)
 	     ("gopls.templateExtensions" [])))
+  ;(setq lsp-semantic-tokens-enable t)
+  ;(setq lsp-semantic-tokens-honor-refresh-requests t)
   ;(setq lsp-go-gopls-server-args '("-rpc.trace" "-logfile" "/tmp/gopls.log"))
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.minio\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.log\\'")
@@ -140,6 +146,11 @@
   :hook
   (go-mode . yas-minor-mode)
   (rust-mode . yas-minor-mode))
+
+(use-package color-identifiers-mode
+  :diminish
+  :hook
+  (go-mode . color-identifiers-mode))
 
 (use-package find-file-in-project
   :config
