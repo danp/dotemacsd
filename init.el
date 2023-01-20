@@ -106,6 +106,8 @@
 
 (use-package elm-mode)
 
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+
 (use-package lsp-mode
   :config (lsp-register-custom-settings
 	   '(("gopls.staticcheck" t t)
@@ -124,6 +126,7 @@
   (go-mode . lsp)
   (elm-mode . lsp)
   (rust-mode . lsp)
+  (tsx-ts-mode . lsp)
   :commands lsp)
 
 (defun lsp-go-install-save-hooks ()
