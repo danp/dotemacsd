@@ -7,3 +7,5 @@ transient
 recentf
 eln-cache
 tree-sitter
+.cache
+snippets
