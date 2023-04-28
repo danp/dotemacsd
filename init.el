@@ -113,6 +113,7 @@
 	   '(("gopls.staticcheck" t t)
 	     ;("gopls.semanticTokens" t t)
 	     ("gopls.completionBudget" "1s" t)
+             ("gopls.directoryFilters" ["-**/node_modules"])
 	     ("gopls.templateExtensions" [])))
   ;(setq lsp-semantic-tokens-enable t)
   ;(setq lsp-semantic-tokens-honor-refresh-requests t)
@@ -127,12 +128,15 @@
   (elm-mode . lsp)
   (rust-mode . lsp)
   (tsx-ts-mode . lsp)
+  (html-mode . lsp)
   :commands lsp)
 
 (defun lsp-go-install-save-hooks ()
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+
+(add-hook 'prog-mode-hook 'copilot-mode)
 
 (defun lsp-rust-install-save-hooks ()
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
@@ -193,3 +197,10 @@
   (setq git-link-use-commit t))
 
 (use-package fish-mode)
+
+(use-package lsp-tailwindcss)
+
+(use-package editorconfig)
+
+(add-to-list 'load-path (expand-file-name "copilot/copilot.el" user-emacs-directory))
+(require 'copilot)
