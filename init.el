@@ -204,3 +204,5 @@
 
 (add-to-list 'load-path (expand-file-name "copilot/copilot.el" user-emacs-directory))
 (require 'copilot)
+(define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
+(define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
