@@ -115,6 +115,7 @@
 	     ("gopls.completionBudget" "1s" t)
              ("gopls.directoryFilters" ["-**/node_modules"])
 	     ("gopls.templateExtensions" [])))
+  (setq lsp-disabled-clients '(semgrep-ls))
   ;(setq lsp-semantic-tokens-enable t)
   ;(setq lsp-semantic-tokens-honor-refresh-requests t)
   ;(setq lsp-go-gopls-server-args '("-rpc.trace" "-logfile" "/tmp/gopls.log"))
