@@ -129,6 +129,7 @@
   (elm-mode . lsp)
   (rust-mode . lsp)
   (tsx-ts-mode . lsp)
+  (typescript-ts-mode . lsp)
   (html-mode . lsp)
   :commands lsp)
 
@@ -207,3 +208,6 @@
 (require 'copilot)
 (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
 (define-key copilot-completion-map (kbd "TAB") 'copilot-accept-completion)
+
+; https://github.com/emacs-lsp/lsp-mode/issues/3516 and https://github.com/emacs-lsp/lsp-mode/issues/4112
+(setq backup-by-copying t)
