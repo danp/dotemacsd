@@ -1,3 +1,6 @@
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
+
 ; custom
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file)
@@ -98,7 +101,8 @@
 
 (use-package magit
   :config
-  (global-set-key (kbd "C-x g") 'magit-status))
+  (global-set-key (kbd "C-x g") 'magit-status)
+  (add-hook 'git-commit-setup-hook 'git-commit-turn-on-flyspell))
 
 (use-package go-mode)
 
@@ -110,15 +114,11 @@
 
 (use-package lsp-mode
   :config (lsp-register-custom-settings
-	   '(("gopls.staticcheck" t t)
-	     ;("gopls.semanticTokens" t t)
-	     ("gopls.completionBudget" "1s" t)
-             ("gopls.directoryFilters" ["-**/node_modules"])
-	     ("gopls.templateExtensions" [])))
+	   '(("gopls.staticcheck" t t)))
   (setq lsp-disabled-clients '(semgrep-ls))
   ;(setq lsp-semantic-tokens-enable t)
   ;(setq lsp-semantic-tokens-honor-refresh-requests t)
-  ;(setq lsp-go-gopls-server-args '("-rpc.trace" "-logfile" "/tmp/gopls.log"))
+  (setq lsp-go-gopls-server-args '("-debug=localhost:31337"))
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.minio\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.log\\'")
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]\\.elastic\\'")
@@ -184,11 +184,7 @@
 
 (use-package protobuf-mode)
 
-(use-package flymake-shellcheck
-  :commands flymake-shellcheck-load
-  :init
-  (add-hook 'sh-mode-hook 'flymake-shellcheck-load)
-  (add-hook 'sh-mode-hook 'flymake-mode))
+(use-package flycheck)
 
 (use-package caddyfile-mode)
 
