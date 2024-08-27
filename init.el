@@ -96,6 +96,8 @@
   (setq xref-show-definitions-function #'ivy-xref-show-defs)
   (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
 
+(use-package lsp-ivy)
+
 (use-package markdown-mode
   :mode ("\\.md\\'" . gfm-mode))
 
@@ -131,6 +133,7 @@
   (tsx-ts-mode . lsp)
   (typescript-ts-mode . lsp)
   (html-mode . lsp)
+  (elixir-mode . lsp)
   :commands lsp)
 
 (defun lsp-go-install-save-hooks ()
@@ -200,6 +203,8 @@
 
 (use-package editorconfig)
 
+(use-package elixir-mode)
+
 (add-to-list 'load-path (expand-file-name "copilot/copilot.el" user-emacs-directory))
 (require 'copilot)
 (define-key copilot-completion-map (kbd "<tab>") 'copilot-accept-completion)
@@ -207,3 +212,18 @@
 
 ; https://github.com/emacs-lsp/lsp-mode/issues/3516 and https://github.com/emacs-lsp/lsp-mode/issues/4112
 (setq backup-by-copying t)
+
+(use-package gptel
+  :config
+  (defun get-anthropic-api-key ()
+    (require 'auth-source)
+    (let ((auth-info (auth-source-search :host "api.anthropic.com"
+                                         :user "apikey"
+                                         :require '(:secret))))
+      (if auth-info
+          (funcall (plist-get (car auth-info) :secret))
+        (error "Could not find Anthropic API key in authinfo"))))
+
+  (gptel-make-anthropic "Claude"
+    :stream t
+    :key #'get-anthropic-api-key))
